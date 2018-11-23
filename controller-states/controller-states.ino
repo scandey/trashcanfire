@@ -83,6 +83,16 @@ void startAdv(void)
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
+
+/**************************************************************************/
+/*!
+    @brief  Adjust intensity of LEDs to given value over a given time
+*/
+/**************************************************************************/
+void fade(float finalintensity, float fadetime) {
+  Serial.print ("Fade");
+}
+
 /**************************************************************************/
 /*!
     @brief  Constantly poll for new command or response data
@@ -90,6 +100,9 @@ void startAdv(void)
 /**************************************************************************/
 void loop(void)
 {
+  // Set LEDs to current intensity with fire effect
+
+  
   // Wait for new data to arrive
   uint8_t len = readPacket(&bleuart, 500);
   if (len == 0) return;
@@ -133,10 +146,11 @@ void loop(void)
     // set LED's to 0
     // flash onboard LED rapidly
   }
+  
   else if (state == 1) {
     if (state != oldstate) {
       Serial.print("State 1: LEDs Off");
-      // set LED's to 0
+      // fade LED's to 0
       // set onboard LED on
       oldstate = state;
     }
@@ -145,7 +159,7 @@ void loop(void)
     if (state != oldstate) {
       Serial.print("State 2: fire effect dim");
       // start fire effect if not started
-      // set LED's to dim
+      // fade LED's to dim
       // set onboard LED on
       oldstate = state;
     }
@@ -154,7 +168,7 @@ void loop(void)
     if (state != oldstate) {
       Serial.print("State 3: fire effect medium");
       // start fire effect if not started
-      // set LED's to medium
+      // fade LED's to medium
       // set onboard LED on
       oldstate = state;
     }
@@ -163,7 +177,7 @@ void loop(void)
     if (state != oldstate) {
       Serial.print("State 4: fire effect bright (don't leave this one on long)");
       // start fire effect if not started
-      // set LED's to bright
+      // fade LED's to bright
       // set onboard LED on
       oldstate = state;
     }
