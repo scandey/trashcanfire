@@ -24,12 +24,19 @@ void    printHex   (const uint8_t * data, const uint32_t numBytes);
 // Packet buffer
 extern uint8_t packetbuffer[];
 
+// State variables
+int state = 0;
+int oldstate = 0;
+
+// Track overall fire intensity
+float fireintensity = 0.0;
+
 void setup(void)
 {
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
-  Serial.println(F("Adafruit Bluefruit52 Controller App Example"));
+  Serial.println(F("Adafruit Bluefruit52 Controller App for Dotstar string"));
   Serial.println(F("-------------------------------------------"));
 
   Bluefruit.begin();
@@ -44,7 +51,7 @@ void setup(void)
   startAdv();
 
   Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
-  Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
+  Serial.println(F("Then use the numbers 1, 2, 3, 4 to control the state of the garbage fire"));
   Serial.println();  
 }
 
@@ -102,6 +109,8 @@ void loop(void)
     Serial.print(green, HEX);
     if (blue < 0x10) Serial.print("0");
     Serial.println(blue, HEX);
+
+    // set LED's to red, green, blue values with intensity at 30%
   }
 
   // Buttons
@@ -111,72 +120,54 @@ void loop(void)
     Serial.print ("Button "); Serial.print(buttnum);
     if (pressed) {
       Serial.println(" pressed");
+      state = buttnum;
     } else {
       Serial.println(" released");
     }
   }
 
-  // GPS Location
-  if (packetbuffer[1] == 'L') {
-    float lat, lon, alt;
-    lat = parsefloat(packetbuffer+2);
-    lon = parsefloat(packetbuffer+6);
-    alt = parsefloat(packetbuffer+10);
-    Serial.print("GPS Location\t");
-    Serial.print("Lat: "); Serial.print(lat, 4); // 4 digits of precision!
-    Serial.print('\t');
-    Serial.print("Lon: "); Serial.print(lon, 4); // 4 digits of precision!
-    Serial.print('\t');
-    Serial.print(alt, 4); Serial.println(" meters");
-  }
+  // State machine check
 
-  // Accelerometer
-  if (packetbuffer[1] == 'A') {
-    float x, y, z;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    Serial.print("Accel\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.println();
+  if (state == 0) {
+    Serial.print("State 0: Initializing or broken");
+    // set LED's to 0
+    // flash onboard LED rapidly
   }
+  else if (state == 1) {
+    if (state != oldstate) {
+      Serial.print("State 1: LEDs Off");
+      // set LED's to 0
+      // set onboard LED on
+      oldstate = state;
+    }
+  }
+  else if (state == 2) {
+    if (state != oldstate) {
+      Serial.print("State 2: fire effect dim");
+      // start fire effect if not started
+      // set LED's to dim
+      // set onboard LED on
+      oldstate = state;
+    }
+  }
+  else if (state == 3) {
+    if (state != oldstate) {
+      Serial.print("State 3: fire effect medium");
+      // start fire effect if not started
+      // set LED's to medium
+      // set onboard LED on
+      oldstate = state;
+    }
+  }
+  else if (state == 4) {
+    if (state != oldstate) {
+      Serial.print("State 4: fire effect bright (don't leave this one on long)");
+      // start fire effect if not started
+      // set LED's to bright
+      // set onboard LED on
+      oldstate = state;
+    }
+  }
+  
 
-  // Magnetometer
-  if (packetbuffer[1] == 'M') {
-    float x, y, z;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    Serial.print("Mag\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.println();
-  }
-
-  // Gyroscope
-  if (packetbuffer[1] == 'G') {
-    float x, y, z;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    Serial.print("Gyro\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.println();
-  }
-
-  // Quaternions
-  if (packetbuffer[1] == 'Q') {
-    float x, y, z, w;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    w = parsefloat(packetbuffer+14);
-    Serial.print("Quat\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.print('\t');
-    Serial.print(w); Serial.println();
-  }
 }
